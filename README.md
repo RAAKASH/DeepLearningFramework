@@ -8,7 +8,7 @@ Check the <b>tutorial.ipynb</b> file for information regarding how the framework
 * Simple linear regression. 
 The <b>tutorial spinoff.ipynb</b> is the same as tutorial.ipynb but with more complex cost functions and the ease of training using the framework thereby exhibiting its usefullness.
 <br> <br>
-The various mathematical operations available listed below:
+The various mathematical operations that are supported are listed below:
 * op.add(x,y)
 * op.subtract(x,y)
 * op.multiply(x,y)
