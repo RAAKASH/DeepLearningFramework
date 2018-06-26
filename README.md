@@ -1,7 +1,9 @@
 # Deep Learning Framework
 This repository is an attempt to create a deep learning framework to aid in faster learning process for newbies in the deep learning field.<br><br>
 The framework is simply an <b>auto-differentiating program</b> which implements the backpropagation algorithm, this is implemented in the <b>graph</b> class of the <b>autogradients.py</b> python file.
-The mathematical operations are recorded using the class file <b>Tensor</b>, all preliminary math operations are implemented in class file <b>op</b>.
+The mathematical operations are recorded using the class file <b>Tensor</b>, all preliminary math operations are implemented in class file <b>op</b>.<br>
+Check the tutorial.ipynb file for information regarding how the framework can be used.
+
 <br> <br>
 The various mathematical operations available listed below:
 * op.add(x,y)
