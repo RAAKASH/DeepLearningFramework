@@ -5,7 +5,7 @@ The mathematical operations are recorded using the class file <b>Tensor</b>, all
 Check the <b>tutorial.ipynb</b> file for information regarding how the framework can be used, the file demostrates 3 examples:
 * 4 Layer Neural network
 * Deep Neural network
-* Simple linear regression. 
+* Simple linear regression. <br>
 The <b>tutorial spinoff.ipynb</b> is the same as tutorial.ipynb but with more complex cost functions and the ease of training using the framework thereby exhibiting its usefullness.
 <br> <br>
 The various mathematical operations that are supported currently by the framework are listed below:
