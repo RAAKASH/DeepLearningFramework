@@ -232,7 +232,7 @@ class op:
             res = np.divide(x1_tmp,np.sum(x1_tmp,axis,keepdims=True))#.reshape(shp))
             x1.cache  = res
             # adding 10**-20 to prevent error in log - numerically stable log
-            res = np.sum(np.multiply(-1*np.log(res+10**-20),x2_val))
+            res = np.sum(np.multiply(-1*np.log(res+10**-20),x2_val),keepdims = True)
             
             if rec:
                 res = Tensor(res,parent=[x1,x2],operation = [op.softmax_crossentropy_loss,axis])
