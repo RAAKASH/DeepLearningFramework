@@ -108,7 +108,7 @@ class op:
     def mse(x1,x2,rec=True,bprop=False,grad=None):
         x1_val,x2_val = x1.get_value(),x2.get_value()
         if bprop==False:
-            res = np.mean(np.subtract(x1_val,x2_val)**2)
+            res = np.mean(np.subtract(x1_val,x2_val)**2,keepdims=True)
             if rec:
                 res = Tensor(res,parent=[x1,x2],operation = [op.mse])
                 x1.update_child(res)
@@ -136,7 +136,29 @@ class op:
                 res = Tensor(res,parent=[x1],operation=[op.exp])
             return res # Note bprop doesnt matter since it is an expoential function
         else:
-            res = np.exp(x1_val)
+            res = np.multiply(np.exp(x1_val),grad)
+            return res#x1.get_consumer().get_value()
+    
+    def log(x1,rec=True,bprop=False,grad=None):
+        x1_val = x1.get_value()
+        if bprop==False:
+            res = np.log(x1_val+10**-20) # Numerical stability
+            if rec:
+                res = Tensor(res,parent=[x1],operation=[op.log])
+            return res # Note bprop doesnt matter since it is an expoential function
+        else:
+            res = np.multiply((x1_val**(-1)),grad)
+            return res#x1.get_consumer().get_value()
+    
+    def T(x1,rec=True,bprop=False,grad=None):
+        x1_val = x1.get_value()
+        if bprop==False:
+            res = x1_val.T # Numerical stability
+            if rec:
+                res = Tensor(res,parent=[x1],operation=[op.T])
+            return res # Note bprop doesnt matter since it is an expoential function
+        else:
+            res = np.multiply(x1_val.T,grad)
             return res#x1.get_consumer().get_value()
     
     def reshape(x1,shape,rec=True,bprop=False,grad=None):
@@ -155,55 +177,43 @@ class op:
     
     
     def sum(x1,axis=None,rec=True,bprop=False,grad=None):
-        # like np.sum this also doesnt axis
-        # Issue: use keepdims in np.sum to retain dimensions
+        # like np.sum this does axis
+        # Issue: use keepdims in np.sum to retain dimensions - Hopefully corrected
         x1_val = x1.get_value()
         if bprop==False:
-            res = np.sum(x1_val,axis)
+            res = np.sum(x1_val,axis,keepdims=True)
             if rec:
                 res = Tensor(res,parent=[x1],operation = [op.sum])
                 x1.update_child(res)
-                x1.axis = axis # cache axis
+                x1.shp = res.shape # cache axis
             return res
         
         else:
-            axis = x1.axis
-            shp = list(x1_val.shape)
-            if type(axis)==int:
-                shp[axis] = 1
-
-            else:
-                for a in axis:
-                    shp[a] = 1    
-                    
-            x1_grad[:] = np.reshape(grad,shp)
+            x1_grad[:] = np.reshape(grad,x1.shp)
             return x1_grad
     
     def mean(x1,axis=None,rec= True,bprop=False,grad=None):
-        # like np.sum this also doesnt axis
+        # hopefully working
         x1_val = x1.get_value()
         if bprop==False:
-            res =np.mean(x1_val,axis)
+            res =np.mean(x1_val,axis,keepdims=True)
             if rec:
                 res = Tensor(res,parent=[x1],operation = [op.mean,axis])
                 x1.update_child(res)
-                x1.axis = axis # cache: axis
+                x1.shp = list(res.shape) # cache: shae of result
             
             return res
         
         else:
-            axis = x1.axis
             shp = list(x1_val.shape)
             cach = 1
-            if type(axis)==int:
-                shp[axis] = 1
-                cach *= shp[axis]
-            else:
-                for a in axis:
-                    cach *= shp[a]
-                    shp[a] = 1
+               
+            for i in shp:
+            	cach*= shp[i]
             
-                 
+            for i in x1.shp:
+            	cach/= x1.shp[i] 
+
             x1_grad[:] = np.reshape(grad,shp)/cach
             return x1_grad
     
@@ -213,19 +223,13 @@ class op:
         if bprop==False:
             
             
-            shp = list(x1_val.shape)
-            if type(axis)==int:
-                shp[axis] = 1
-            else:
-                for a in axis:
-                    shp[a] = 1
             # Taking care of overflow        
             x1_tmp = x1_val
-            x1_tmpmax = np.max(x1_tmp,axis).reshape(shp)
+            x1_tmpmax = np.max(x1_tmp,axis,keepdims=True)
             x1_tmp = x1_tmp-x1_tmpmax
             x1_tmp  = np.exp(x1_tmp)
                 
-            res = np.divide(x1_tmp,np.sum(x1_tmp,axis).reshape(shp))
+            res = np.divide(x1_tmp,np.sum(x1_tmp,axis,keepdims=True))#.reshape(shp))
             x1.cache  = res
             # adding 10**-20 to prevent error in log - numerically stable log
             res = np.sum(np.multiply(-1*np.log(res+10**-20),x2_val))
@@ -393,6 +397,8 @@ class Tensor:
     sigmoid = op.sigmoid
     RelU = op.RelU
     tanh = op.tanh
+    log = op.log
+    T = op.T
 
 
 class graph:
